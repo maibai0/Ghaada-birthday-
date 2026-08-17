@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Ghada 🤍</title>
+
+<!--
+  HOW TO ADD YOUR OWN PHOTOS
+  ---------------------------
+  This page looks for image files sitting in the SAME FOLDER as this file,
+  with these exact names. Drop your photos in with matching names and they
+  will appear automatically. If a file is missing, a placeholder box shows
+  instead, so nothing breaks.
+
+    intro-photo.jpg     -> round photo on the very first screen
+    heart-photo-1.jpg   -> left heart frame in the letter screen
+    heart-photo-2.jpg   -> right heart frame in the letter screen
+    polaroid-1.jpg      -> first hanging polaroid
+    polaroid-2.jpg      -> second hanging polaroid
+    polaroid-3.jpg      -> third hanging polaroid
+    memory-1.jpg ... memory-6.jpg  -> the 6 photos in the "Our Memories" grid
+                                        (want more than 6? tell Claude, or find
+                                        "memoryNumbers" near the bottom of this
+                                        file and add more numbers to the list)
+    cutie-1.jpg ... cutie-6.jpg    -> the 6 photos in the "My Cutie Pics" grid
+                                        (same idea — edit "cutieNumbers" for more)
+    background-photo.jpg -> one photo of her that shows faintly behind the
+                            whole site, on every screen (soft cream tint over
+                            it so text stays easy to read)
+    song.mp3            -> background music that plays once she taps anywhere
+                            (must be named exactly "song.mp3" — there's a small
+                            speaker button in the top-right corner to mute it)
+
+  You can rename photos to these names, or edit the src="..." values
+  below (search for "REPLACE PHOTO") to point at whatever filenames
+  you'd like.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Caveat:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --maroon-deep:#6e1729;
+    --crimson:#a8253f;
+    --crimson-soft:#c23a56;
+    --blush:#f7d9e0;
+    --cream:#fff6ee;
+    --gold:#d8ab5a;
+    --ink:#3a0f18;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family:'Poppins',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    overflow:hidden;
+  }
+
+  /* ---------- persistent decorative frame ---------- */
+  .stage{
+    position:relative;
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
+    background:var(--cream);
+  }
+
+  .bg-photo{
+    position:absolute;
+    inset:0;
+    z-index:0;
+  }
+  .bg-photo img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .bg-photo .tint{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, rgba(255,246,238,.55) 0%, rgba(255,246,238,.65) 100%);
+  }
+
+  .blob{
+    position:absolute;
+    top:-8%;
+    bottom:-8%;
+    width:38vw;
+    max-width:420px;
+    background:linear-gradient(160deg,var(--crimson) 0%,var(--maroon-deep) 100%);
+    z-index:0;
+  }
+  .blob.left{
+    left:-14vw;
+    border-radius:0 45% 45% 0/0 60% 60% 0;
+  }
+  .blob.right{
+    right:-14vw;
+    border-radius:45% 0 0 45%/60% 0 0 60%;
+  }
+  @media (max-width:640px){
+    .blob{ width:30vw; }
+  }
+
+  .heart-drift{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
+    overflow:hidden;
+  }
+  .heart-drift span{
+    position:absolute;
+    bottom:-40px;
+    font-size:18px;
+    color:var(--crimson-soft);
+    opacity:.55;
+    animation:rise linear infinite;
+  }
+  @keyframes rise{
+    0%{ transform:translateY(0) rotate(0deg); opacity:0; }
+    10%{ opacity:.6; }
+    100%{ transform:translateY(-110vh) rotate(25deg); opacity:0; }
+  }
+
+  /* ---------- screens ---------- */
+  .screen{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:8vh 12vw;
+    opacity:0;
+    transform:translateY(14px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .screen.active{
+    display:flex;
+    opacity:1;
+    transform:translateY(0);
+  }
+
+  h1.display{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:800;
+    color:var(--crimson);
+    letter-spacing:.5px;
+    margin:0 0 6px;
+    text-shadow:2px 2px 0 rgba(110,23,41,.12);
+  }
+  .script{
+    font-family:'Caveat',cursive;
+    color:var(--maroon-deep);
+    font-weight:600;
+  }
+  .body-line{
+    font-family:'Poppins',sans-serif;
+    font-weight:400;
+    color:var(--ink);
+    max-width:420px;
+    line-height:1.5;
+  }
+
+  .btn{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:1.05rem;
+    padding:12px 30px;
+    border-radius:999px;
+    border:2px solid var(--crimson);
+    background:transparent;
+    color:var(--crimson);
+    cursor:pointer;
+    letter-spacing:.3px;
+    transition:transform .15s ease, background .2s ease, color .2s ease;
+  }
+  .btn.solid{
+    background:var(--crimson);
+    color:#fff;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn.solid:hover{ background:var(--maroon-deep); }
+
+  /* ---------- screen 1 : intro ---------- */
+  #screen-intro .photo-wrap{
+    width:130px; height:130px;
+    border-radius:50%;
+    border:4px solid var(--gold);
+    overflow:hidden;
+    margin-bottom:18px;
+    box-shadow:0 8px 20px rgba(110,23,41,.25);
+    background:var(--blush);
+  }
+  #screen-intro .photo-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  h1.big-hey{ font-size:clamp(2.4rem,7vw,3.4rem); }
+  .ask{ font-size:clamp(1.3rem,4vw,1.8rem); margin:2px 0 22px; }
+
+  .btn-row{
+    position:relative;
+    display:flex;
+    gap:18px;
+    height:56px;
+    align-items:center;
+    width:220px;
+    justify-content:center;
+  }
+  #noBtn{ position:relative; transition:transform .18s ease; }
+
+  /* ---------- screen 2 : happy birthday ---------- */
+  #screen-bday .cake-wrap{
+    width:150px; height:150px;
+    margin-bottom:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:64px;
+  }
+  h1.bday-name{
+    font-family:'Caveat',cursive;
+    font-weight:700;
+    font-size:clamp(2.6rem,8vw,3.6rem);
+  }
+  .bday-sub{ font-size:1.05rem; margin-top:6px; }
+
+  /* ---------- screen 3 : envelope ---------- */
+  .envelope{
+    position:relative;
+    width:220px; height:150px;
+    cursor:pointer;
+    margin-bottom:26px;
+  }
+  .envelope .body{
+    position:absolute; inset:0;
+    background:var(--blush);
+    border-radius:8px;
+    box-shadow:0 10px 24px rgba(110,23,41,.25);
+  }
+  .envelope .flap{
+    position:absolute;
+    top:0; left:0; width:100%; height:78px;
+    background:var(--crimson-soft);
+    clip-path:polygon(0 0,100% 0,50% 85%);
+    transform-origin:top;
+    transition:transform .6s ease;
+    border-radius:8px 8px 0 0;
+    z-index:3;
+  }
+  .envelope.open .flap{ transform:rotateX(180deg); }
+  .envelope .ribbon{
+    position:absolute;
+    left:50%; top:38%;
+    transform:translate(-50%,-50%);
+    width:46px; height:46px;
+    z-index:4;
+    transition:opacity .3s ease;
+  }
+  .envelope.open .ribbon{ opacity:0; }
+  .envelope .letter{
+    position:absolute;
+    left:8%; bottom:6px;
+    width:84%; height:70%;
+    background:#fffaf4;
+    border-radius:4px;
+    box-shadow:0 4px 10px rgba(0,0,0,.08);
+    transform:translateY(10%);
+    transition:transform .6s ease .1s;
+    z-index:2;
+  }
+  .envelope.open .letter{ transform:translateY(-38%); }
+
+  /* ---------- screen 4 : letter / hearts ---------- */
+  .letter-msg{
+    max-width:380px;
+    font-size:1.05rem;
+    line-height:1.6;
+    margin-bottom:22px;
+  }
+  .letter-msg .script{ font-size:1.3rem; }
+  .hearts-row{
+    display:flex;
+    gap:26px;
+    margin-bottom:24px;
+  }
+  .heart-frame{
+    width:120px; height:120px;
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 29.6'%3E%3Cpath d='M23.6 0c-3 0-5.9 1.6-7.6 4.3C14.3 1.6 11.4 0 8.4 0 3.8 0 0 3.8 0 8.4c0 8.8 10.6 14.6 16 20.2 5.4-5.6 16-11.4 16-20.2C32 3.8 28.2 0 23.6 0z'/%3E%3C/svg%3E");
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 29.6'%3E%3Cpath d='M23.6 0c-3 0-5.9 1.6-7.6 4.3C14.3 1.6 11.4 0 8.4 0 3.8 0 0 3.8 0 8.4c0 8.8 10.6 14.6 16 20.2 5.4-5.6 16-11.4 16-20.2C32 3.8 28.2 0 23.6 0z'/%3E%3C/svg%3E");
+    -webkit-mask-size:contain; mask-size:contain;
+    -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+    background:var(--blush);
+    border:2px solid var(--gold);
+    box-shadow:0 6px 14px rgba(110,23,41,.2);
+  }
+  .heart-frame img{ width:100%; height:100%; object-fit:cover; object-position:center 30%; }
+
+  /* ---------- screen 5 : polaroids ---------- */
+  .string-wrap{
+    position:relative;
+    width:100%;
+    max-width:420px;
+    height:150px;
+    margin-bottom:8px;
+  }
+  .string-line{
+    position:absolute;
+    top:14px; left:0; right:0;
+    height:2px;
+    background:var(--maroon-deep);
+    opacity:.5;
+  }
+  .polaroid{
+    position:absolute;
+    top:6px;
+    width:88px;
+    background:#fff;
+    padding:6px 6px 16px;
+    border-radius:2px;
+    box-shadow:0 8px 16px rgba(0,0,0,.18);
+  }
+  .polaroid .pin{
+    position:absolute; top:-5px; left:50%; transform:translateX(-50%);
+    width:9px; height:9px; border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 1px 3px rgba(0,0,0,.3);
+  }
+  .polaroid .ph{
+    width:100%; aspect-ratio:1/1;
+    background:var(--blush);
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .polaroid .ph img{ width:100%; height:100%; object-fit:cover; }
+  .polaroid.p1{ left:2%; transform:rotate(-8deg); }
+  .polaroid.p2{ left:calc(50% - 44px); transform:rotate(4deg); top:22px; }
+  .polaroid.p3{ right:2%; transform:rotate(9deg); }
+
+  h1.love{ font-size:clamp(2.2rem,7vw,3rem); margin-top:6px; }
+
+  /* ---------- screen 6 : gift box ---------- */
+  .gift{
+    position:relative;
+    width:150px; height:120px;
+    cursor:pointer;
+    margin-bottom:14px;
+  }
+  .gift .lid{
+    position:absolute; top:-22px; left:-8px; right:-8px; height:34px;
+    background:var(--crimson);
+    border-radius:6px;
+    transition:transform .5s ease, opacity .4s ease;
+    transform-origin:left top;
+    z-index:3;
+  }
+  .gift .box{
+    position:absolute; top:0; left:0; right:0; bottom:0;
+    background:var(--crimson-soft);
+    border-radius:4px;
+  }
+  .gift .ribbon-v{
+    position:absolute; top:-22px; bottom:0; left:50%;
+    width:16px; margin-left:-8px;
+    background:var(--gold);
+    z-index:4;
+  }
+  .gift.open .lid{ transform:translateY(-40px) rotate(-25deg); opacity:0; }
+  .gift .burst{
+    position:absolute; inset:-40px;
+    pointer-events:none;
+    z-index:5;
+  }
+
+  .placeholder-tag{
+    font-size:.65rem;
+    color:var(--maroon-deep);
+    opacity:.55;
+    margin-top:4px;
+    font-family:'Poppins',sans-serif;
+  }
+
+  /* ---------- screen 7 : final ---------- */
+  #screen-final .script{ font-size:clamp(1.6rem,5vw,2.1rem); }
+  #screen-final h1{ font-size:clamp(2rem,6vw,2.6rem); }
+
+  .nav-hint{
+    position:absolute;
+    bottom:22px;
+    font-size:.75rem;
+    color:var(--maroon-deep);
+    opacity:.5;
+    z-index:2;
+  }
+
+  /* ---------- screen : python heart art (grand finale) ---------- */
+  #screen-heart-art{
+    padding:6vh 6vw;
+  }
+  #screen-heart-art.active{ display:flex; }
+  #screen-heart-art .eyebrow{
+    font-family:'Poppins',sans-serif;
+    color:#ffb6c1;
+    opacity:.7;
+    font-size:.8rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  #heartCanvas{
+    max-width:100%;
+    height:auto;
+  }
+  #heartArtContinue{
+    margin-top:18px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .6s ease;
+    border-color:#ffb6c1;
+    color:#ffb6c1;
+  }
+  #heartArtContinue.solid-pink{
+    background:#ffb6c1;
+    color:#2a0a10;
+  }
+
+  /* ---------- screen : memories gallery ---------- */
+  #screen-memories .memories-title{ margin-bottom:4px; }
+  .memories-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:12px;
+    max-width:420px;
+    width:100%;
+    margin:18px 0 24px;
+  }
+  .memory-card{
+    aspect-ratio:1/1;
+    border-radius:10px;
+    overflow:hidden;
+    background:var(--blush);
+    border:2px solid var(--gold);
+    box-shadow:0 6px 14px rgba(110,23,41,.18);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .memory-card img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .memory-card .empty-tag{ font-size:10px; color:var(--maroon-deep); opacity:.5; }
+
+  /* ---------- music mute button ---------- */
+  #muteBtn{
+    position:fixed;
+    top:14px; right:14px;
+    z-index:10;
+    width:40px; height:40px;
+    border-radius:50%;
+    border:2px solid var(--crimson);
+    background:#fff8;
+    font-size:18px;
+    cursor:pointer;
+  }
+
+  /* ---------- fullscreen photo viewer (lightbox) ---------- */
+  .lightbox{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:rgba(0,0,0,.92);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .lightbox.active{ display:flex; }
+  .lightbox img{
+    max-width:100%;
+    max-height:100%;
+    border-radius:10px;
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  .lightbox-hint{
+    position:absolute;
+    bottom:24px;
+    left:0; right:0;
+    text-align:center;
+    color:#fff;
+    opacity:.6;
+    font-size:.75rem;
+    font-family:'Poppins',sans-serif;
+  }
+
+  /* ---------- password gate ---------- */
+  #passwordInput{
+    font-family:'Poppins',sans-serif;
+    font-size:1.1rem;
+    padding:12px 18px;
+    border-radius:999px;
+    border:2px solid var(--crimson);
+    background:#fff;
+    color:var(--ink);
+    text-align:center;
+    width:220px;
+    max-width:70vw;
+    margin:18px 0 10px;
+    outline:none;
+  }
+  #passwordError{
+    color:var(--crimson);
+    font-size:.85rem;
+    height:18px;
+    margin-bottom:6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="bg-photo" id="bgPhotoWrap">
+    <!-- REPLACE PHOTO: background-photo.jpg -->
+    <img src="background-photo.jpg" alt="" onerror="document.getElementById('bgPhotoWrap').innerHTML='<p style=\'position:absolute;bottom:6px;left:6px;font-size:10px;color:#a8253f;opacity:.6;z-index:5;background:#fff;padding:2px 6px;border-radius:4px\'>background-photo.jpg not found</p>'">
+    <div class="tint"></div>
+  </div>
+  <div class="blob left"></div>
+  <div class="blob right"></div>
+  <div class="heart-drift" id="heartDrift"></div>
+
+  <!-- background music: put a song file named "song.mp3" in the same folder -->
+  <audio id="bgMusic" src="song.mp3" loop preload="auto"></audio>
+  <button id="muteBtn" onclick="toggleMute()">🔊</button>
+
+  <!-- fullscreen photo viewer — opens when any photo is tapped -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="">
+    <p class="lightbox-hint">tap anywhere to close</p>
+  </div>
+
+  <!-- SCREEN 0 : PASSWORD GATE -->
+  <section class="screen active" id="screen-password">
+    <h1 class="display" style="font-size:clamp(2rem,6vw,2.6rem)">This one's just for you 💗</h1>
+    <p class="body-line" style="margin-bottom:4px">Enter the password to open it</p>
+    <input type="password" id="passwordInput" placeholder="password" autocomplete="off">
+    <p id="passwordError"></p>
+    <button class="btn solid" onclick="checkPassword()">Unlock</button>
+  </section>
+
+  <!-- SCREEN 1 : INTRO -->
+  <section class="screen" id="screen-intro">
+    <div class="photo-wrap">
+      <!-- REPLACE PHOTO: intro-photo.jpg -->
+      <img src="intro-photo.jpg" alt="" style="cursor:pointer" onclick="openLightbox(this.src)" onerror="this.parentElement.innerHTML='<span style=\'font-size:38px\'>🐾</span>'">
+    </div>
+    <h1 class="display big-hey">HEY!!</h1>
+    <p class="body-line" style="margin:6px 0 8px">I love you more than it fits in the screen. The first online bestie I have, and always will be — and the endless laughs I've had with you, while playing and while annoying others, are always the best part of my day.</p>
+    <p class="script ask" style="margin:2px 0 22px">Do you want to see?</p>
+    <div class="btn-row">
+      <button class="btn solid" onclick="goTo('screen-bday')">Yes</button>
+      <button class="btn" id="noBtn">No</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 2 : HAPPY BIRTHDAY -->
+  <section class="screen" id="screen-bday">
+    <div class="cake-wrap">🎂</div>
+    <h1 class="display bday-name">HAPPY BIRTHDAY GHADA</h1>
+    <p class="body-line bday-sub">You are and always will be my favorite notification.<br>Always keep looking cute, happy, sexy, and ofc mine ;)</p>
+    <div style="height:26px"></div>
+    <button class="btn solid" onclick="goTo('screen-envelope')">Next</button>
+  </section>
+<!-- SCREEN 3 : ENVELOPE -->
+  <section class="screen" id="screen-envelope">
+    <div class="envelope" id="envelope" onclick="openEnvelope()">
+      <div class="body"></div>
+      <div class="letter"></div>
+      <div class="flap"></div>
+      <div class="ribbon">🎀</div>
+    </div>
+    <p class="script" style="font-size:1.4rem">Tap here to open</p>
+    <button class="btn" id="envelopeContinue" style="opacity:0;pointer-events:none;margin-top:16px" onclick="goTo('screen-letter')">Continue</button>
+  </section>
+
+  <!-- SCREEN 4 : LETTER + HEARTS -->
+  <section class="screen" id="screen-letter">
+    <p class="letter-msg">
+      Ghada, <span class="script">you are seen, you are heard, and you are loved,</span>
+      no matter what. If you ever feel unloved, remember that my love for you is
+      <span class="script">boundless and endless.</span>
+    </p>
+    <div class="hearts-row">
+      <div class="heart-frame">
+        <!-- REPLACE PHOTO: heart-photo-1.jpg — if the photo looks cropped weird,
+             change the "30%" below: lower number = shows more of the top of
+             the photo, higher number = shows more of the bottom -->
+        <img src="heart-photo-1.jpg" style="object-position:center 30%;cursor:pointer" onclick="openLightbox(this.src)" alt="" onerror="this.parentElement.style.display='flex';this.parentElement.style.alignItems='center';this.parentElement.style.justifyContent='center';this.outerHTML='<span style=\'font-size:11px;opacity:.6\'>photo</span>'">
+      </div>
+      <div class="heart-frame">
+        <!-- REPLACE PHOTO: heart-photo-2.jpg — same trick, adjust the % below -->
+        <img src="heart-photo-2.jpg" style="object-position:center 30%;cursor:pointer" onclick="openLightbox(this.src)" alt="" onerror="this.parentElement.style.display='flex';this.parentElement.style.alignItems='center';this.parentElement.style.justifyContent='center';this.outerHTML='<span style=\'font-size:11px;opacity:.6\'>photo</span>'">
+      </div>
+    </div>
+    <button class="btn solid" onclick="goTo('screen-photos')">Click here</button>
+  </section>
+
+  <!-- SCREEN 5 : POLAROIDS -->
+  <section class="screen" id="screen-photos">
+    <div class="string-wrap">
+      <div class="string-line"></div>
+      <div class="polaroid p1"><div class="pin"></div>
+        <div class="ph">
+          <!-- REPLACE PHOTO: polaroid-1.jpg -->
+          <img src="polaroid-1.jpg" style="cursor:pointer" onclick="openLightbox(this.src)" alt="" onerror="this.remove()">
+        </div>
+      </div>
+      <div class="polaroid p2"><div class="pin"></div>
+        <div class="ph">
+          <!-- REPLACE PHOTO: polaroid-2.jpg -->
+          <img src="polaroid-2.jpg" style="cursor:pointer" onclick="openLightbox(this.src)" alt="" onerror="this.remove()">
+        </div>
+      </div>
+      <div class="polaroid p3"><div class="pin"></div>
+        <div class="ph">
+          <!-- REPLACE PHOTO: polaroid-3.jpg -->
+          <img src="polaroid-3.jpg" style="cursor:pointer" onclick="openLightbox(this.src)" alt="" onerror="this.remove()">
+        </div>
+      </div>
+    </div>
+    <h1 class="display love">I LOVE YOU</h1>
+    <p class="script" style="font-size:clamp(1.4rem,5vw,1.9rem)">Us, always together. Muah 💋</p>
+    <div style="height:16px"></div>
+    <button class="btn solid" onclick="goTo('screen-memories')">Click here</button>
+  </section>
+
+  <!-- SCREEN 5.5 : MEMORIES GALLERY -->
+  <section class="screen" id="screen-memories">
+    <h1 class="display memories-title">Our Memories</h1>
+    <p class="body-line">Every one of these is a reason I smile.</p>
+    <div class="memories-grid" id="memoriesGrid"></div>
+    <button class="btn solid" onclick="goTo('screen-cutie')">Click here</button>
+  </section>
+
+  <!-- SCREEN 5.7 : MY CUTIE PICS -->
+  <section class="screen" id="screen-cutie">
+    <h1 class="display memories-title">My Cutie Pics</h1>
+    <p class="body-line">Every single one of these could be my lockscreen.</p>
+    <div class="memories-grid" id="cutieGrid"></div>
+    <button class="btn solid" onclick="goTo('screen-gift')">Click here</button>
+  </section>
+  <section class="screen" id="screen-gift">
+    <p class="script" style="font-size:1.6rem;margin-bottom:22px">Here's a surprise for you!!!</p>
+    <div class="gift" id="gift" onclick="openGift()">
+      <div class="lid"></div>
+      <div class="box"></div>
+      <div class="ribbon-v"></div>
+    </div>
+    <p class="body-line" style="margin-top:18px">Tap here</p>
+  </section>
+
+  <!-- SCREEN 6.5 : PYTHON HEART ART (grand finale reveal) -->
+  <section class="screen" id="screen-heart-art">
+    <p class="eyebrow">one more thing, made with code</p>
+    <canvas id="heartCanvas" width="520" height="520"></canvas>
+    <button class="btn" id="heartArtContinue" onclick="goTo('screen-final')">Continue</button>
+  </section>
+
+  <!-- SCREEN 7 : FINAL -->
+  <section class="screen" id="screen-final">
+    <h1 class="display">Happy Birthday, Ghada</h1>
+    <p class="script">I love you more than words fit on a screen. 💗</p>
+  </section>
+
+  <div class="nav-hint" id="navHint"></div>
+</div>
+
+<script>
+  function goTo(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ---------- Password gate ----------
+  // Change the word between the quotes below to whatever password you want.
+  const SITE_PASSWORD = "ghada";
+
+  function checkPassword(){
+    const entered = document.getElementById('passwordInput').value.trim().toLowerCase();
+    if(entered === SITE_PASSWORD.toLowerCase()){
+      goTo('screen-intro');
+    } else {
+      document.getElementById('passwordError').textContent = "That's not it, try again 🤔";
+      document.getElementById('passwordInput').value = '';
+    }
+  }
+  document.getElementById('passwordInput').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') checkPassword();
+  });
+
+  // Start music on the very first tap anywhere (browsers block sound
+  // from playing on its own — it needs a real tap first)
+  const bgMusic = document.getElementById('bgMusic');
+  function startMusicOnce(){
+    bgMusic.play().catch(()=>{});
+    document.removeEventListener('click', startMusicOnce);
+  }
+  document.addEventListener('click', startMusicOnce);
+
+  function toggleMute(){
+    bgMusic.muted = !bgMusic.muted;
+    document.getElementById('muteBtn').textContent = bgMusic.muted ? '🔇' : '🔊';
+  }
+   // Fullscreen photo viewer
+  function openLightbox(src){
+    if(!src) return;
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('active');
+  }
+  function closeLightbox(){
+    document.getElementById('lightbox').classList.remove('active');
+  }
+
+  // "No" button dodges — classic playful gimmick
+  const noBtn = document.getElementById('noBtn');
+  const btnRow = document.querySelector('#screen-intro .btn-row');
+  function dodge(){
+    const rowRect = btnRow.getBoundingClientRect();
+    const maxX = Math.max(0, rowRect.width - noBtn.offsetWidth);
+    const maxY = 40;
+    const x = (Math.random() * maxX) - (maxX/2);
+    const y = (Math.random() * maxY) - (maxY/2);
+    noBtn.style.transform = `translate(${x}px, ${y}px)`;
+  }
+  noBtn.addEventListener('pointerenter', dodge);
+  noBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); dodge(); });
+
+  // Envelope open
+  function openEnvelope(){
+    const env = document.getElementById('envelope');
+    env.classList.add('open');
+    const cont = document.getElementById('envelopeContinue');
+    setTimeout(()=>{
+      cont.style.opacity = '1';
+      cont.style.pointerEvents = 'auto';
+    }, 550);
+  }
+
+  // Gift open -> confetti hearts then advance
+  function openGift(){
+    const gift = document.getElementById('gift');
+    if(gift.classList.contains('open')) return;
+    gift.classList.add('open');
+    const burst = document.createElement('div');
+    burst.className = 'burst';
+    for(let i=0;i<14;i++){
+      const h = document.createElement('span');
+      h.textContent = '💗';
+      h.style.position='absolute';
+      h.style.left = (45 + Math.random()*10) + '%';
+      h.style.top = '30%';
+      h.style.fontSize = (14 + Math.random()*14) + 'px';
+      h.style.transition = 'transform 1s ease, opacity 1s ease';
+      gift.appendChild(h);
+      requestAnimationFrame(()=>{
+        const angle = Math.random()*Math.PI*2;
+        const dist = 60 + Math.random()*70;
+        h.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist - 40}px) rotate(${Math.random()*90-45}deg)`;
+        h.style.opacity = '0';
+      });
+    }
+    setTimeout(()=>{
+      goTo('screen-heart-art');
+      drawHeartArt();
+    }, 1000);
+  }
+
+  // ---------- Python-turtle-style heart made of "I love you" text ----------
+  // Recreates: x = 16*sin(a)^3*scale, y = (13cos(a)-5cos2a-2cos3a-cos4a)*scale
+  function drawHeartArt(){
+    const canvas = document.getElementById('heartCanvas');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,w,h);
+
+    const cx = w/2, cy = h/2;
+    const points = [];
+    for(let scale=11; scale<17; scale++){
+      for(let i=0;i<120;i++){
+        const angle = i * (Math.PI*2) / 120;
+        const x = 16 * Math.pow(Math.sin(angle),3) * scale;
+        const y = (13*Math.cos(angle) - 5*Math.cos(2*angle) - 2*Math.cos(3*angle) - Math.cos(4*angle)) * scale;
+        points.push({ x: cx + x*0.86, y: cy - y*0.86 });
+      }
+    }
+
+    ctx.fillStyle = '#ffb6c1';
+    ctx.font = 'bold 22px Arial';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#ffb6c1';
+    ctx.shadowBlur = 6;
+
+    let idx = 0;
+    const perTick = 2;
+    const tickDelay = 75; // ms between each little batch — bigger number = slower
+    const btn = document.getElementById('heartArtContinue');
+    btn.style.opacity = '0';
+    btn.classList.remove('solid-pink');
+    btn.style.pointerEvents = 'none';
+
+    function step(){
+      for(let k=0;k<perTick && idx<points.length; k++, idx++){
+        const p = points[idx];
+        ctx.fillText('I love you Ghada', p.x, p.y);
+      }
+      if(idx < points.length){
+        setTimeout(step, tickDelay);
+      } else {
+        btn.style.opacity = '1';
+        btn.classList.add('solid-pink');
+        btn.style.pointerEvents = 'auto';
+      }
+    }
+    step();
+  }
+
+  // Ambient floating hearts in background
+  const drift = document.getElementById('heartDrift');
+  const glyphs = ['💗','💖','💕'];
+  for(let i=0;i<10;i++){
+    const s = document.createElement('span');
+    s.textContent = glyphs[Math.floor(Math.random()*glyphs.length)];
+    s.style.left = (Math.random()*100)+'%';
+    s.style.animationDuration = (9 + Math.random()*8)+'s';
+    s.style.animationDelay = (Math.random()*10)+'s';
+    s.style.fontSize = (12 + Math.random()*14)+'px';
+    drift.appendChild(s);
+  }
+
+  // ---------- Memories gallery ----------
+  // To add more photos: just add more numbers to this list, e.g. [1,2,3,4,5,6,7,8]
+  // Then add matching files: memory-1.jpg, memory-2.jpg, memory-3.jpg ...
+  const memoryNumbers = [1,2,3,4,5,6,7,8,9];
+  const grid = document.getElementById('memoriesGrid');
+  memoryNumbers.forEach(n=>{
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    const img = document.createElement('img');
+    img.src = `memory-${n}.jpg`;
+    img.alt = '';
+    img.style.cursor = 'pointer';
+    img.onclick = () => openLightbox(img.src);
+    img.onerror = function(){
+      card.innerHTML = '<span class="empty-tag">memory-'+n+'.jpg</span>';
+    };
+    card.appendChild(img);
+    grid.appendChild(card);
+  });
+
+  // "My Cutie Pics" gallery — same idea as Memories, its own set of numbers
+  const cutieNumbers = [1,2,3,4,5,6,7,8,9];
+  const cutieGrid = document.getElementById('cutieGrid');
+  cutieNumbers.forEach(n=>{
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    const img = document.createElement('img');
+    img.src = `cutie-${n}.jpg`;
+    img.alt = '';
+    img.style.cursor = 'pointer';
+    img.onclick = () => openLightbox(img.src);
+    img.onerror = function(){
+      card.innerHTML = '<span class="empty-tag">cutie-'+n+'.jpg</span>';
+    };
+    card.appendChild(img);
+    cutieGrid.appendChild(card);
+  });
+</script>
+
+</body>
+</html>
